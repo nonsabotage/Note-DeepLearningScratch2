@@ -4,4 +4,3 @@ pkl
 clone-samples.sh
 create-repository.sh
 __pycache__
-.ipynb_checkpoints
