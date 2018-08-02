@@ -17,32 +17,47 @@ class Affine:
 		out = np.dot(x, W) + b
 		return out
 
+class Softmax:
+    def __init__(self):
+        self.params, self.grads = [], []
+        self.out = None
 
-class TwoLayerNet:
-	def __init__(self, input_size, hidden_size, output_size):
+    def forward(self, x):
+        self.out = softmax(x)
+        return self.out
 
-		I, H, O = input_size, hidden_size, output_size
+    def backward(self, dout):
+        dx = self.out * dout
+        sumdx = np.sum(dx, axis=1, keepdims=True)
+        dx -= self.out * sumdx
+        return dx
 
-		# 重みとバイアスの初期化
-		W1 = np.random.randn(I,H)
-		b1 = np.random.randn(H)
-		W2 = np.random.randn(H,O)
-		b2 = np.random.randn(O)
 
-		# レイヤの生成
-		self.layers = [
-			Affine(W1, b1),
-			Sigmoid(),
-			Affine(W2, b2)
-		]
+class SoftmaxWithLoss:
+    def __init__(self):
+        self.params, self.grads = [], []
+        self.y = None  # softmaxの出力
+        self.t = None  # 教師ラベル
 
-		# すべての重みをリストにまとめる
-		# リストの要素をまとめてリストが作成されている
-		self.params = []
-		for layer in self.layers:
-			self.params += layer.params
+    def forward(self, x, t):
+        self.t = t
+        self.y = softmax(x)
 
-	def predict(self, x):
-		for layer in self.layers:
-			x = layer.forward(x)
-		return x
+        # 教師ラベルがone-hotベクトルの場合、正解のインデックスに変換
+        if self.t.size == self.y.size:
+            self.t = self.t.argmax(axis=1)
+
+        loss = cross_entropy_error(self.y, self.t)
+        return loss
+
+    def backward(self, dout=1):
+        batch_size = self.t.shape[0]
+
+        dx = self.y.copy()
+        dx[np.arange(batch_size), self.t] -= 1
+        dx *= dout
+        dx = dx / batch_size
+
+        return dx
+
+
