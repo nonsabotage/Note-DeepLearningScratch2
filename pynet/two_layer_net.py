@@ -17,8 +17,7 @@ class TwoLayerNet:
 		self.layers = [
 			Affine(W1, b1),
 			Sigmoid(),
-			Affine(W2, b2)
-		]
+			Affine(W2, b2)]
 		self.loss_layer = SoftmaxWithLoss()
 
 		# すべての重みをリストにまとめる
