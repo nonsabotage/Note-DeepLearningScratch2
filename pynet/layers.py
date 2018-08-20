@@ -1,29 +1,26 @@
 # coding: utf-8
 import numpy as np
+from pynet.np import *
 from pynet.functions import *
 
 class MatMul:
-	def __init__(self, W):
-		self.params = [W]
-		self.grads = [np.zeros_like(W)]
-		self.x = None
+    def __init__(self, W):
+        self.params = [W]
+        self.grads = [np.zeros_like(W)]
+        self.x = None
 
-	def forward(self, x):
-		W, = self.params
-		out = np.dot(x, W)
-		self.x = x
-		return out
+    def forward(self, x):
+        W, = self.params
+        out = np.dot(x, W)
+        self.x = x
+        return out
 
-	def backward(self, dout):
-		W, self.params
-		dx = np.dot(dout, W.T)
-		dW = np.dot(self.x.T, dout)
-		# 三点コピーという技術(ディープコピー)
-		# アドレスはそのままで値だけ入れ替
-		# 通常のコピーだと, 参照コピーとなってしまう
-		self.grads[0][...] = dW
-		return dx
-
+    def backward(self, dout):
+        W, = self.params
+        dx = np.dot(dout, W.T)
+        dW = np.dot(self.x.T, dout)
+        self.grads[0][...] = dW
+        return dx
 
 class Sigmoid:
 	def __init__(self):
@@ -107,3 +104,23 @@ class SoftmaxWithLoss:
         return dx
 
 
+class Embedding:
+    def __init__(self, W):
+        self.params = [W]
+        self.grads = [np.zero_like(W)]
+        self.idx = None
+
+    def forward(self, idx):
+        W, = self.params
+        self.idx = idx
+        out = W[idx]
+        return out
+
+    def backward(self, dout):
+        dW, = self.grads
+        dW[...] = 0 # dWの形状を保ったまま値だけ0にする
+
+        # for i, word_id in enumerate(self.idx):
+        #     dW[word_id] += dout[i]
+        np.add.at(dW, self.idx, dout)
+        return None
